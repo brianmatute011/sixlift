@@ -65,14 +65,14 @@ x86-64, dynamically linked against glibc — runs on mainstream distros.
 
 ### Windows (prebuilt)
 
-1. Download **`sixlift-windows-x86_64.exe`** from the
-   [latest release](https://github.com/brianmatute011/sixlift/releases/latest).
-2. Open **PowerShell as Administrator**, `cd` to the download folder, then:
+Open **PowerShell as Administrator** and run:
 
 ```powershell
-Rename-Item sixlift-windows-x86_64.exe sixlift.exe   # shorter to type
+# Download the latest binary straight to sixlift.exe
+Invoke-WebRequest -Uri https://github.com/brianmatute011/sixlift/releases/latest/download/sixlift-windows-x86_64.exe -OutFile sixlift.exe
+
 .\sixlift.exe install   # copies to C:\sixlift and creates a scheduled task
-.\sixlift.exe on
+.\sixlift.exe on        # route IPv4 over IPv6, start self-healing
 .\sixlift.exe status
 ```
 
