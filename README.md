@@ -45,7 +45,40 @@ The connectivity checks are raw `getaddrinfo` + non-blocking `connect`
 | Watchdog | `systemd` timer | Task Scheduler (`schtasks`) |
 | Adapter discovery | `nmcli` | `GetAdaptersAddresses` (IP Helper) |
 
-## Build
+## Install
+
+Prebuilt binaries for every tagged version are on the
+[releases page](https://github.com/brianmatute011/sixlift/releases/latest).
+No build step required.
+
+### Linux (prebuilt)
+
+```sh
+curl -L -o sixlift https://github.com/brianmatute011/sixlift/releases/latest/download/sixlift-linux-x86_64
+chmod +x sixlift
+sudo ./sixlift install   # copies to /usr/local/bin and creates the watchdog
+sudo sixlift on          # route IPv4 over IPv6, start self-healing
+sixlift status
+```
+
+x86-64, dynamically linked against glibc — runs on mainstream distros.
+
+### Windows (prebuilt)
+
+1. Download **`sixlift-windows-x86_64.exe`** from the
+   [latest release](https://github.com/brianmatute011/sixlift/releases/latest).
+2. Open **PowerShell as Administrator**, `cd` to the download folder, then:
+
+```powershell
+.\sixlift-windows-x86_64.exe install   # copies to C:\sixlift and creates a scheduled task
+.\sixlift-windows-x86_64.exe on
+.\sixlift-windows-x86_64.exe status
+```
+
+The installed copy lives at `C:\sixlift\sixlift.exe`; add `C:\sixlift` to your
+`PATH` to call `sixlift` from anywhere.
+
+## Build from source
 
 Requires CMake ≥ 3.16 and a C11 compiler.
 
@@ -65,7 +98,7 @@ cmake -S . -B build
 cmake --build build --config Release
 # then, in an elevated prompt:
 .\build\Release\sixlift.exe install
-sixlift on
+.\build\Release\sixlift.exe on
 ```
 
 ### Windows .exe cross-compiled from Linux (MinGW)
