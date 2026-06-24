@@ -70,9 +70,10 @@ x86-64, dynamically linked against glibc — runs on mainstream distros.
 2. Open **PowerShell as Administrator**, `cd` to the download folder, then:
 
 ```powershell
-.\sixlift-windows-x86_64.exe install   # copies to C:\sixlift and creates a scheduled task
-.\sixlift-windows-x86_64.exe on
-.\sixlift-windows-x86_64.exe status
+Rename-Item sixlift-windows-x86_64.exe sixlift.exe   # shorter to type
+.\sixlift.exe install   # copies to C:\sixlift and creates a scheduled task
+.\sixlift.exe on
+.\sixlift.exe status
 ```
 
 The installed copy lives at `C:\sixlift\sixlift.exe`; add `C:\sixlift` to your
