@@ -1,7 +1,7 @@
 #ifndef SIXLIFT_CONFIG_H
 #define SIXLIFT_CONFIG_H
 
-#define SIXLIFT_VERSION "1.1.0"
+#define SIXLIFT_VERSION "1.2.0"
 
 /* Two independent public NAT64/DNS64 providers for redundancy:
  *   nat64.net (Kasper Dupont)  +  Trex (Tampere, Finland).

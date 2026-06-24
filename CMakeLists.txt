@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(sixlift
-        VERSION 1.1.0
+        VERSION 1.2.0
         DESCRIPTION "IPv4 over IPv6 (NAT64/DNS64) with a self-healing watchdog"
         LANGUAGES C)
 
@@ -16,6 +16,7 @@ endif()
 set(SIXLIFT_SOURCES
   src/main.c
   src/config.c
+  src/log.c
   src/probe.c
   src/service.c)
 

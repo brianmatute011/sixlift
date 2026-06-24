@@ -2,6 +2,7 @@
 
 #if !defined(_WIN32)
 
+#include "sixlift/log.h"
 #include "sixlift/proc.h"
 #include "sixlift/route.h"
 
@@ -111,6 +112,7 @@ int plat_set_dns64(const char *conn, const char *dev,
             break;
         off += (size_t)w;
     }
+    LOG_DEBUGF("setting ipv6.dns on '%s' to: %s", conn, dns);
     char *m1[] = {"nmcli", "connection", "modify", (char *)conn,
                   "ipv6.dns", dns, NULL};
     char *m2[] = {"nmcli", "connection", "modify", (char *)conn,
@@ -173,16 +175,22 @@ int plat_watchdog_install(const char *self_bin)
         "WantedBy=timers.target\n";
 
     FILE *f = fopen(SERVICE, "w");
-    if (!f)
+    if (!f) {
+        LOG_ERRORF("cannot write unit '%s'", SERVICE);
         return -1;
+    }
     fputs(svc, f);
     fclose(f);
+    LOG_DEBUGF("wrote systemd unit '%s'", SERVICE);
 
     f = fopen(TIMER, "w");
-    if (!f)
+    if (!f) {
+        LOG_ERRORF("cannot write unit '%s'", TIMER);
         return -1;
+    }
     fputs(tmr, f);
     fclose(f);
+    LOG_DEBUGF("wrote systemd unit '%s'", TIMER);
 
     char *dr[] = {"systemctl", "daemon-reload", NULL};
     proc_run_quiet(dr);

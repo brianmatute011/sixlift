@@ -1,5 +1,7 @@
 #include "sixlift/probe.h"
 
+#include "sixlift/log.h"
+
 #include <string.h>
 
 #if defined(_WIN32)
@@ -100,8 +102,11 @@ bool probe_tcp(const char *host, const char *port, int family, int timeout_sec)
     hints.ai_socktype = SOCK_STREAM;
 
     struct addrinfo *res = NULL;
-    if (getaddrinfo(host, port, &hints, &res) != 0 || !res)
+    if (getaddrinfo(host, port, &hints, &res) != 0 || !res) {
+        LOG_DEBUGF("probe %s:%s (family %d): name resolution failed",
+                   host, port, family);
         return false;
+    }
 
     bool ok = false;
     for (struct addrinfo *ai = res; ai; ai = ai->ai_next) {
@@ -118,6 +123,8 @@ bool probe_tcp(const char *host, const char *port, int family, int timeout_sec)
     }
 
     freeaddrinfo(res);
+    LOG_DEBUGF("probe %s:%s (family %d): %s",
+               host, port, family, ok ? "reachable" : "unreachable");
     return ok;
 }
 

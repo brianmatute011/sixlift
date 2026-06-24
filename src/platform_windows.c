@@ -2,6 +2,8 @@
 
 #if defined(_WIN32)
 
+#include "sixlift/log.h"
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
@@ -27,6 +29,8 @@ const char *plat_log_path(void)   { return LOGF; }
 /* Run a command line, hidden. If out != NULL, capture stdout. Returns exit code. */
 static int win_run(const char *cmdline, char *out, size_t outlen)
 {
+    LOG_DEBUGF("exec: %s", cmdline);
+
     SECURITY_ATTRIBUTES sa = {sizeof(sa), NULL, TRUE};
     HANDLE rd = NULL, wr = NULL, nul = INVALID_HANDLE_VALUE;
 
@@ -67,6 +71,8 @@ static int win_run(const char *cmdline, char *out, size_t outlen)
     if (wr) CloseHandle(wr);
 
     if (!ok) {
+        LOG_ERRORF("CreateProcess failed (%lu): %s",
+                   (unsigned long)GetLastError(), cmdline);
         if (rd) CloseHandle(rd);
         if (nul != INVALID_HANDLE_VALUE) CloseHandle(nul);
         return -1;
@@ -94,6 +100,7 @@ static int win_run(const char *cmdline, char *out, size_t outlen)
     CloseHandle(pi.hThread);
     if (nul != INVALID_HANDLE_VALUE)
         CloseHandle(nul);
+    LOG_DEBUGF("exit %d: %s", (int)code, cmdline);
     return (int)code;
 }
 

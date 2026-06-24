@@ -88,6 +88,26 @@ cmake --build build-win        # -> build-win/sixlift.exe
 | `sixlift log`            | Show the watchdog log |
 | `sudo sixlift uninstall` | Revert and delete every installed file |
 
+## Logging
+
+Every run emits structured, leveled diagnostics with an RFC 3339 UTC
+timestamp, severity, and source location, through three independent sinks:
+
+| Sink | Default level | Notes |
+|---|---|---|
+| File   | `DEBUG` | `/var/log/sixlift.log` (Linux), `C:\sixlift\sixlift.log` (Windows) |
+| stderr | `WARN`  | keeps normal output clean; raise with `-v` / `-vv` |
+| syslog | `INFO`  | POSIX only — visible via `journalctl -t sixlift` |
+
+```
+2026-06-24T14:21:13Z [DEBUG] proc.c:31 run_impl: exec: nmcli connection up CheetahX
+2026-06-24T14:21:13Z [INFO ] service.c:55 sl_test: connectivity test: nat64=ok
+```
+
+Control verbosity with `-v` (INFO to stderr), `-vv` (DEBUG to stderr),
+`-q` (errors only), or set the file/syslog threshold via the
+`SIXLIFT_LOG_LEVEL` environment variable (`trace|debug|info|warn|error|fatal`).
+
 ## Scope & limitations
 
 - **Linux & Windows.** Each has its own backend; macOS is not supported.

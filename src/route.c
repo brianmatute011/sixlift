@@ -1,5 +1,7 @@
 #include "sixlift/route.h"
 
+#include "sixlift/log.h"
+
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
@@ -143,20 +145,37 @@ static int del_blackhole(int fd, uint32_t metric, unsigned seq)
 int route_delete_ipv6_blackhole_local(void)
 {
     int fd = nl_open();
-    if (fd < 0)
+    if (fd < 0) {
+        LOG_ERRORF("netlink: cannot open NETLINK_ROUTE socket: %s",
+                   strerror(errno));
         return -1;
+    }
 
     uint32_t metrics[MAX_HITS];
     int n = find_blackholes(fd, metrics, MAX_HITS);
-    if (n <= 0) {
+    if (n < 0) {
+        LOG_ERRORF("netlink: route dump failed");
         close(fd);
-        return n < 0 ? -1 : 0;
+        return -1;
+    }
+    LOG_DEBUGF("netlink: found %d IPv6 blackhole default route(s) in local table",
+               n);
+    if (n == 0) {
+        close(fd);
+        return 0;
     }
 
     int deleted = 0;
     for (int i = 0; i < n && i < MAX_HITS; i++) {
-        if (del_blackhole(fd, metrics[i], (unsigned)(100 + i)) == 0)
+        int rc = del_blackhole(fd, metrics[i], (unsigned)(100 + i));
+        if (rc == 0) {
+            LOG_DEBUGF("netlink: deleted blackhole default (metric %u)",
+                       metrics[i]);
             deleted++;
+        } else {
+            LOG_WARNF("netlink: failed to delete blackhole (metric %u): %s",
+                      metrics[i], strerror(-rc));
+        }
     }
 
     close(fd);
