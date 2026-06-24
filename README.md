@@ -1,5 +1,7 @@
 # sixlift
 
+[![build](https://github.com/brianmatute011/sixlift/actions/workflows/build.yml/badge.svg)](https://github.com/brianmatute011/sixlift/actions/workflows/build.yml)
+
 **Use the internet over IPv6 when your ISP's IPv4 is broken.**
 
 Some ISPs (typically via a misbehaving CGNAT) leave you with working **IPv6**
@@ -8,7 +10,8 @@ times out. `sixlift` routes that IPv4 traffic over your working IPv6 using
 public **NAT64/DNS64** gateways, and runs a small **watchdog** that keeps it
 alive across IPv6 blips and DNS resets.
 
-It's a single, dependency-free C binary built with CMake.
+Single, dependency-free C binary built with CMake. Runs on **Linux** and
+**Windows** behind one platform-abstraction layer.
 
 ```
 sudo sixlift install   # install the command + watchdog
@@ -31,26 +34,46 @@ sudo sixlift off       # revert everything
    - reconnects the link if base IPv6 dropped,
    - re-asserts the DNS64 servers.
 
-The connectivity checks are raw `getaddrinfo` + non-blocking `connect`; the
-route surgery is native **rtnetlink** (`RTM_GETROUTE` dump + `RTM_DELROUTE`).
-Connection/DNS plumbing is delegated to `nmcli`/`resolvectl`/`systemctl`,
-which own that state.
+The connectivity checks are raw `getaddrinfo` + non-blocking `connect`
+(POSIX sockets / Winsock). The rest is OS-specific and lives behind
+[`platform.h`](include/sixlift/platform.h):
+
+| Operation | Linux backend | Windows backend |
+|---|---|---|
+| Blackhole route removal | native **rtnetlink** | n/a (Linux-only artifact) |
+| DNS configuration | `nmcli` / `resolvectl` | `Set-DnsClientServerAddress` |
+| Watchdog | `systemd` timer | Task Scheduler (`schtasks`) |
+| Adapter discovery | `nmcli` | `GetAdaptersAddresses` (IP Helper) |
 
 ## Build
 
-Requires a C11 compiler, CMake ≥ 3.16, and Linux kernel headers.
+Requires CMake ≥ 3.16 and a C11 compiler.
+
+### Linux (gcc/clang)
 
 ```sh
 cmake -S . -B build
 cmake --build build
-# binary at build/sixlift
-```
-
-Then install system-wide (sets up the watchdog too):
-
-```sh
 sudo ./build/sixlift install
 sudo sixlift on
+```
+
+### Windows (MSVC)
+
+```powershell
+cmake -S . -B build
+cmake --build build --config Release
+# then, in an elevated prompt:
+.\build\Release\sixlift.exe install
+sixlift on
+```
+
+### Windows .exe cross-compiled from Linux (MinGW)
+
+```sh
+sudo apt install mingw-w64
+cmake -S . -B build-win -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+cmake --build build-win        # -> build-win/sixlift.exe
 ```
 
 ## Commands
@@ -67,9 +90,7 @@ sudo sixlift on
 
 ## Scope & limitations
 
-- **Linux only.** It speaks rtnetlink and drives systemd + NetworkManager.
-  CMake makes it portable across Linux distros and CPU architectures, **not**
-  across operating systems.
+- **Linux & Windows.** Each has its own backend; macOS is not supported.
 - **Name-based traffic only.** DNS64 fixes anything resolved by hostname.
   Connections to a hard-coded IPv4 literal (e.g. `ping 8.8.8.8`) are not
   translated.

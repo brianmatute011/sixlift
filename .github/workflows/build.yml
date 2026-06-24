@@ -1,0 +1,42 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux:
+    name: Linux (gcc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build
+      - name: Build
+        run: cmake --build build
+      - name: Smoke test
+        run: ./build/sixlift help
+
+  windows:
+    name: Windows (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Smoke test
+        run: .\build\Release\sixlift.exe help
+
+  windows-mingw-cross:
+    name: Windows (MinGW cross from Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MinGW
+        run: sudo apt-get update && sudo apt-get install -y mingw-w64
+      - name: Configure
+        run: cmake -S . -B build-win -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+      - name: Build
+        run: cmake --build build-win
