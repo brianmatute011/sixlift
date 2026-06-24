@@ -1,0 +1,46 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    name: Linux binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cmake -S . -B build
+          cmake --build build
+      - name: Package
+        run: |
+          cp build/sixlift sixlift-linux-x86_64
+          strip sixlift-linux-x86_64
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sixlift-linux-x86_64
+          fail_on_unmatched_files: true
+
+  windows:
+    name: Windows binary
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cmake -S . -B build
+          cmake --build build --config Release
+      - name: Package
+        run: Copy-Item build\Release\sixlift.exe sixlift-windows-x86_64.exe
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sixlift-windows-x86_64.exe
+          fail_on_unmatched_files: true
